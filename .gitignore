@@ -1,0 +1,25 @@
+# Ambiente virtual
+venv/
+
+# PyInstaller output
+build/
+dist/
+*.spec
+
+# Ficheiros temporários do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Cache do VS Code
+.vscode/
+*.code-workspace
+
+# Sistema operativo (Windows)
+Thumbs.db
+.DS_Store
+
+# Outros
+.env
+*.log
