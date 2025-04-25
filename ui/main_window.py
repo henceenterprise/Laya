@@ -1,15 +1,23 @@
 from PyQt6.QtWidgets import QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFrame
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 from core.voice import Voice
 from core.processes import is_process_running
 from core.actions import open_vs_code, open_fork, close_apps
 import time
+import sys
+import os
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Laya Assistant")
-        self.setGeometry(100, 100, 400, 500)
+        self.resize(320, 240)
+        self.position_bottom_right(margin_x=100, margin_y=100)
+
+        # Definir ícone da janela (compatível com PyInstaller)
+        icon_path = self.resource_path("assets/favicon/favicon.ico")
+        self.setWindowIcon(QIcon(icon_path))
 
         self.voice = Voice()
 
@@ -18,10 +26,10 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
-        title = QLabel("Laya")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("font-size: 24px; font-weight: bold;")
-        layout.addWidget(title)
+        # title = QLabel("Laya")
+        # title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # title.setStyleSheet("font-size: 24px; font-weight: bold;")
+        # layout.addWidget(title)
 
         # Developer Mode
         dev_frame = QFrame()
@@ -53,6 +61,12 @@ class MainWindow(QMainWindow):
 
         # Estado inicial
         self.update_developer_state()
+
+    def resource_path(self, relative_path):
+        """Usa o caminho correto mesmo depois de compilado com PyInstaller"""
+        if hasattr(sys, '_MEIPASS'):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.abspath(relative_path)
 
     def closeEvent(self, event):
         self.voice.stop()
@@ -90,3 +104,16 @@ class MainWindow(QMainWindow):
         end = time.perf_counter()
         elapsed_ms = round((end - start) * 1000, 2)
         self.label.setText(f"Pong! Tempo de resposta: {elapsed_ms} ms")
+
+    def position_bottom_right(self, margin_x=100, margin_y=100):
+        screen_geometry = self.screen().availableGeometry()
+        screen_width = screen_geometry.width()
+        screen_height = screen_geometry.height()
+
+        window_width = self.width()
+        window_height = self.height()
+
+        x = screen_width - window_width - margin_x
+        y = screen_height - window_height - margin_y
+
+        self.move(x, y)
