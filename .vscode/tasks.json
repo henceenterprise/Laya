@@ -4,27 +4,23 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Run Laya Assistant",
+      "label": "Build EXE",
       "type": "shell",
-      "command": "python main.py",
+      "command": "${workspaceFolder}/venv/Scripts/python.exe -m PyInstaller main.spec",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "group": {
         "kind": "build",
-        "isDefault": true
+        "isDefault": false
       },
       "presentation": {
         "echo": true,
         "reveal": "always",
-        "focus": false,
+        "focus": true,
         "panel": "shared"
       },
       "problemMatcher": []
-    },
-    {
-      "label": "Build EXE",
-      "type": "shell",
-      "command": "python -m PyInstaller main.spec",
-      "group": "build",
-      "problemMatcher": []
-    }    
+    }          
   ]
 }
