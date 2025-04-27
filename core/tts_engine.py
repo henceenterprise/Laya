@@ -1,38 +1,36 @@
-from PyQt6.QtCore import QThread
 import pyttsx3
+import threading
 import queue
-
-class VoiceThread(QThread):
-    def __init__(self, engine, fila):
-        super().__init__()
-        self.engine = engine
-        self.fila = fila
-        self.running = True
-
-    def run(self):
-        while self.running:
-            try:
-                texto = self.fila.get(timeout=0.1)
-                self.engine.say(texto)
-                self.engine.runAndWait()
-            except queue.Empty:
-                continue
-
-    def parar(self):
-        self.running = False
 
 class Voice:
     def __init__(self):
         self.engine = pyttsx3.init()
-        self.engine.setProperty('rate', 170)
         self.queue = queue.Queue()
-        self.thread = VoiceThread(self.engine, self.queue)
+        self.thread = threading.Thread(target=self._worker)
+        self.thread.daemon = True
+        self.running = True
         self.thread.start()
 
-    def say(self, texto):
-        print(f"[Laya diz]: {texto}")
-        self.queue.put(texto)
+    def _worker(self):
+        while self.running:
+            try:
+                text = self.queue.get(timeout=0.5)
+                if text is None:
+                    break
+                self.engine.say(text)
+                self.engine.runAndWait()
+            except queue.Empty:
+                continue
+
+    def say(self, text):
+        self.queue.put(text)
 
     def stop(self):
-        self.thread.parar()
-        self.thread.wait()
+        self.running = False
+        self.queue.put(None)  # Envia None para desbloquear o queue.get()
+        if self.thread.is_alive():
+            self.thread.join(timeout=2)  # Espera no máximo 2 segundos
+        try:
+            self.engine.stop()
+        except Exception:
+            pass

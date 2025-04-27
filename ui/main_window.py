@@ -1,25 +1,9 @@
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFrame, QFileDialog, QMessageBox
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFrame
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from core import ProjectExporter, Voice, open_vs_code, open_fork, close_apps, is_process_running
-import time
+from core import Voice, export_project_ui, Ping, is_developer_mode_active, activate_developer_mode, deactivate_developer_mode
 import sys
 import os
-
-class ExportThread(QThread):
-    finished = pyqtSignal(str)
-    error = pyqtSignal(Exception)
-
-    def __init__(self, folder):
-        super().__init__()
-        self.folder = folder
-
-    def run(self):
-        try:
-            zip_path = ProjectExporter.export_project(self.folder)
-            self.finished.emit(zip_path)
-        except Exception as e:
-            self.error.emit(e)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -28,18 +12,15 @@ class MainWindow(QMainWindow):
         self.resize(320, 240)
         self.position_bottom_right(margin_x=100, margin_y=100)
 
-        # Set window icon (PyInstaller compatible)
         icon_path = self.resource_path("assets/favicon/favicon.ico")
         self.setWindowIcon(QIcon(icon_path))
 
         self.voice = Voice()
 
-        # Central widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
-        # Developer Mode
         dev_frame = QFrame()
         dev_layout = QVBoxLayout(dev_frame)
         dev_label = QLabel("🔧 Developer Mode")
@@ -55,7 +36,6 @@ class MainWindow(QMainWindow):
 
         layout.addWidget(dev_frame)
 
-        # Random Features
         random_frame = QFrame()
         random_layout = QVBoxLayout(random_frame)
         rand_label = QLabel("✨ Random Features")
@@ -68,26 +48,28 @@ class MainWindow(QMainWindow):
 
         layout.addWidget(random_frame)
 
-        # Status label
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.label)
 
-        # Initial state
         self.update_developer_state()
 
     def resource_path(self, relative_path):
-        """Get the correct resource path (even when bundled with PyInstaller)"""
         if hasattr(sys, '_MEIPASS'):
             return os.path.join(sys._MEIPASS, relative_path)
         return os.path.abspath(relative_path)
 
     def closeEvent(self, event):
-        self.voice.stop()
-        super().closeEvent(event)
+        try:
+            if hasattr(self, 'voice') and self.voice:
+                self.voice.stop()
+        except Exception as e:
+            print(f"Error while stopping voice engine: {e}")
+
+        event.accept()
 
     def update_developer_state(self):
-        self.developer_mode = is_process_running("Code.exe") or is_process_running("Fork.exe")
+        self.developer_mode = is_developer_mode_active()
         if self.developer_mode:
             self.dev_button.setText("Desativar Developer Mode")
             self.label.setText("Developer mode ativo.")
@@ -96,56 +78,16 @@ class MainWindow(QMainWindow):
             self.label.setText("Olá! Sou a Laya 😊")
 
     def toggle_developer_mode(self):
-        self.developer_mode = is_process_running("Code.exe") or is_process_running("Fork.exe")
-
         if not self.developer_mode:
-            self.label.setText("Initializing developer mode...")
-            self.voice.say("Initializing developer mode")
-            self.dev_button.setText("Desativar Developer Mode")
-            open_vs_code()
-            open_fork()
-            self.developer_mode = True
+            activate_developer_mode(self)
         else:
-            self.label.setText("Shutting down developer mode...")
-            self.voice.say("Shutting down developer mode")
-            self.dev_button.setText("Ativar Developer Mode")
-            close_apps()
-            self.developer_mode = False
+            deactivate_developer_mode(self)
 
     def export_project(self):
-        folder = QFileDialog.getExistingDirectory(self, "Choose the project folder to export")
-        if folder:
-            self.label.setText("Exporting project...")
-            self.export_button.setEnabled(False)
-            self.dev_button.setEnabled(False)
-            self.pong_button.setEnabled(False)
-
-            self.export_thread = ExportThread(folder)
-            self.export_thread.finished.connect(self.on_export_finished)
-            self.export_thread.error.connect(self.on_export_error)
-            self.export_thread.start()
-
-    def on_export_finished(self, zip_path):
-        self.voice.say("Export completed!")
-        QMessageBox.information(self, "Success", f"Project exported to:\n{zip_path}")
-        self.label.setText("Export completed successfully!")
-        self.export_button.setEnabled(True)
-        self.dev_button.setEnabled(True)
-        self.pong_button.setEnabled(True)
-
-    def on_export_error(self, e):
-        self.voice.say("Error during export.")
-        QMessageBox.critical(self, "Error", f"Error exporting project:\n{str(e)}")
-        self.label.setText("Error during project export.")
-        self.export_button.setEnabled(True)
-        self.dev_button.setEnabled(True)
-        self.pong_button.setEnabled(True)
+        export_project_ui(self)
 
     def test_ping(self):
-        start = time.perf_counter()
-        self.voice.say("Pong!")
-        end = time.perf_counter()
-        elapsed_ms = round((end - start) * 1000, 2)
+        elapsed_ms = Ping(self.voice)
         self.label.setText(f"Pong! Response time: {elapsed_ms} ms")
 
     def position_bottom_right(self, margin_x=100, margin_y=100):
