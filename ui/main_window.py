@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFrame
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from core import Voice, export_project_ui, Ping, is_developer_mode_active, activate_developer_mode, deactivate_developer_mode
+from core import Voice, export_project_ui, Ping, is_developer_mode_active, activate_developer_mode, deactivate_developer_mode, toggle_fishing, get_fish_label
 import sys
 import os
 
@@ -9,7 +9,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Laya Assistant")
-        self.resize(320, 240)
+        self.resize(320, 320)
         self.position_bottom_right(margin_x=100, margin_y=100)
 
         icon_path = self.resource_path("assets/favicon/favicon.ico")
@@ -45,6 +45,10 @@ class MainWindow(QMainWindow):
         self.pong_button = QPushButton("Ping Laya!")
         self.pong_button.clicked.connect(self.test_ping)
         random_layout.addWidget(self.pong_button)
+
+        self.btnFish = QPushButton(get_fish_label())
+        self.btnFish.clicked.connect(self.toggle_fishing)
+        random_layout.addWidget(self.btnFish)
 
         layout.addWidget(random_frame)
 
@@ -89,6 +93,9 @@ class MainWindow(QMainWindow):
     def test_ping(self):
         elapsed_ms = Ping(self.voice)
         self.label.setText(f"Pong! Response time: {elapsed_ms} ms")
+
+    def toggle_fishing(self):
+        toggle_fishing(self)
 
     def position_bottom_right(self, margin_x=100, margin_y=100):
         screen_geometry = self.screen().availableGeometry()
