@@ -4,7 +4,6 @@ venv/
 # PyInstaller output
 build/
 dist/
-*.spec
 
 # Ficheiros temporários do Python
 __pycache__/
