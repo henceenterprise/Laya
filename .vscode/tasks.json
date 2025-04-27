@@ -4,6 +4,22 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Run Laya Assistant",
+      "type": "shell",
+      "command": "python main.py",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Build EXE",
       "type": "shell",
       "command": "${workspaceFolder}/venv/Scripts/python.exe -m PyInstaller main.spec",
@@ -12,7 +28,7 @@
       },
       "group": {
         "kind": "build",
-        "isDefault": false
+        "isDefault": true
       },
       "presentation": {
         "echo": true,
