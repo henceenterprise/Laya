@@ -46,9 +46,10 @@ class MainWindow(QMainWindow):
         self.pong_button.clicked.connect(self.test_ping)
         random_layout.addWidget(self.pong_button)
 
-        self.btnFish = QPushButton(get_fish_label())
-        self.btnFish.clicked.connect(self.toggle_fishing)
-        random_layout.addWidget(self.btnFish)
+        self.fishing_mode = False
+        self.fish_button = QPushButton(get_fish_label())
+        self.fish_button.clicked.connect(self.toggle_fishing)
+        random_layout.addWidget(self.fish_button)
 
         layout.addWidget(random_frame)
 

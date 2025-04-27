@@ -8,10 +8,6 @@ from PyQt6.QtCore import QThread, pyqtSignal
 class ProjectExporter:
     @staticmethod
     def export_project(folder_path: str) -> str:
-        """
-        Export the selected folder into a .zip file, respecting .gitignore rules.
-        Returns the created .zip file path.
-        """
         if not os.path.isdir(folder_path):
             raise ValueError("The selected path is not a valid folder.")
 
@@ -56,12 +52,24 @@ class ExportThread(QThread):
 
 def export_project_ui(window):
     """Handles the full UI flow for exporting a project"""
+
+    # 🔥 FIRST: Pause fishing if active
+    try:
+        if getattr(window, 'fishing_mode', False):
+            print("[INFO] Pausing fishing before exporting.")
+            window.fishing_mode = False
+            window.label.setText("Fishing paused for export.")
+    except Exception as e:
+        print(f"[WARNING] Could not pause fishing cleanly: {e}")
+
     folder = QFileDialog.getExistingDirectory(window, "Choose the project folder to export")
     if folder:
         window.label.setText("Exporting project...")
-        window.export_button.setEnabled(False)
-        window.dev_button.setEnabled(False)
-        window.pong_button.setEnabled(False)
+
+        for btn_name in ['export_button', 'dev_button', 'pong_button', 'fish_button']:
+            btn = getattr(window, btn_name, None)
+            if btn:
+                btn.setEnabled(False)
 
         window.export_thread = ExportThread(folder)
         window.export_thread.finished.connect(lambda zip_path: on_export_finished(window, zip_path))
@@ -72,14 +80,16 @@ def on_export_finished(window, zip_path):
     window.voice.say("Export completed!")
     QMessageBox.information(window, "Success", f"Project exported to:\n{zip_path}")
     window.label.setText("Export completed successfully!")
-    window.export_button.setEnabled(True)
-    window.dev_button.setEnabled(True)
-    window.pong_button.setEnabled(True)
+    for btn_name in ['export_button', 'dev_button', 'pong_button', 'fish_button']:
+        btn = getattr(window, btn_name, None)
+        if btn:
+            btn.setEnabled(True)
 
 def on_export_error(window, e):
     window.voice.say("Error during export.")
     QMessageBox.critical(window, "Error", f"Error exporting project:\n{str(e)}")
     window.label.setText("Error during project export.")
-    window.export_button.setEnabled(True)
-    window.dev_button.setEnabled(True)
-    window.pong_button.setEnabled(True)
+    for btn_name in ['export_button', 'dev_button', 'pong_button', 'fish_button']:
+        btn = getattr(window, btn_name, None)
+        if btn:
+            btn.setEnabled(True)

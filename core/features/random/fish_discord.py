@@ -23,7 +23,7 @@ def toggle_fishing(window):
         window.voice.say("Activating fishing protocol.")
         window.showMinimized()
         fishing_detection_active = True
-        window.btnFish.setText(get_fish_label())
+        window.fish_button.setText(get_fish_label())
 
         detect_channel_thread = threading.Thread(target=wait_for_correct_channel, args=(window,))
         detect_channel_thread.daemon = True
@@ -103,6 +103,7 @@ def fishing_loop(window):
                     pause_fishing(window)
                     break
 
+                time.sleep(0.5)
                 pyautogui.typewrite("/fish")
                 time.sleep(0.5)
                 pyautogui.press('enter')
@@ -126,7 +127,7 @@ def pause_fishing(window):
     fishing_mode = False
 
     def safe_pause():
-        window.btnFish.setText(get_fish_label())
+        window.fish_button.setText(get_fish_label())
 
     QTimer.singleShot(0, safe_pause)
 
@@ -138,7 +139,7 @@ def full_cancel(window):
     last_detected_channel = ""
 
     def safe_full_cancel():
-        window.btnFish.setText(get_fish_label())
+        window.fish_button.setText(get_fish_label())
         QMessageBox.warning(window, "Fishing Canceled", "Fishing stopped.")
 
     QTimer.singleShot(0, safe_full_cancel)
@@ -158,4 +159,3 @@ def is_discord_focused(hwnd):
     except Exception as e:
         print(f"[ERROR] Checking active window: {e}")
         return False
-
