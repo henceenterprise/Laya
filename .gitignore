@@ -12,7 +12,8 @@ __pycache__/
 *.pyd
 
 # Cache do VS Code
-.vscode/
+.vscode/*
+!.vscode/tasks.json
 *.code-workspace
 
 # Sistema operativo (Windows)

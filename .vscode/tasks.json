@@ -1,0 +1,30 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Laya Assistant",
+      "type": "shell",
+      "command": "python main.py",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build EXE",
+      "type": "shell",
+      "command": "python -m PyInstaller main.spec",
+      "group": "build",
+      "problemMatcher": []
+    }    
+  ]
+}
