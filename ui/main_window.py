@@ -1,7 +1,9 @@
+# ui/main_window.py
+
 from PyQt6.QtWidgets import QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFrame
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from core import Voice, export_project_ui, Ping, is_developer_mode_active, activate_developer_mode, deactivate_developer_mode, toggle_fishing, get_fish_label
+from core import Voice, export_project_ui, Ping, is_developer_mode_active, activate_developer_mode, deactivate_developer_mode, toggle_fishing, get_fish_label, start_hotkey_listener, stop_hotkey_listener
 import sys
 import os
 
@@ -59,6 +61,9 @@ class MainWindow(QMainWindow):
 
         self.update_developer_state()
 
+        # Start hotkey listener
+        start_hotkey_listener(self)
+
     def resource_path(self, relative_path):
         if hasattr(sys, '_MEIPASS'):
             return os.path.join(sys._MEIPASS, relative_path)
@@ -68,6 +73,7 @@ class MainWindow(QMainWindow):
         try:
             if hasattr(self, 'voice') and self.voice:
                 self.voice.stop()
+            stop_hotkey_listener()  # <=== stop F8 listener on close
         except Exception as e:
             print(f"Error while stopping voice engine: {e}")
 
